@@ -173,7 +173,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Community
 
-- [Discord](https://discord.gg/ZPZRvgMJDT)
-- [Telegram](https://t.me/KarlsenNetwork)
+- [Discord](https://discord.gg/QyrvshRBJV)
+- [Telegram](https://t.me/KarlsenTaskForce)
 - [Reddit](https://www.reddit.com/r/KarlsenNetwork/)
-- [Website](https://karlsencoin.com/)
+- [Website](https://karlsencoin.org/)
