@@ -174,6 +174,6 @@ MIT License — see [LICENSE](LICENSE) for details.
 ## Community
 
 - [Discord](https://discord.gg/QyrvshRBJV)
-- [Telegram](https://t.me/KarlsenTaskForce)
+- [Telegram](https://t.me/KarlsenCoin)
 - [Reddit](https://www.reddit.com/r/KarlsenNetwork/)
 - [Website](https://karlsencoin.org/)
