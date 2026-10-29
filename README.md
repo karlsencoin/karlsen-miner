@@ -1,17 +1,17 @@
 # KarlsenMiner v3.2.0
 
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20HiveOS-blue.svg)](https://github.com/karlsencoin/karlsen-miner/releases)
-[![GPU](https://img.shields.io/badge/GPU-AMD%20%2B%20NVIDIA%20%2B%20Intel%20Arc-green.svg)]()
+[![GPU](https://img.shields.io/badge/GPU-AMD%20%2B%20NVIDIA-green.svg)]()
 [![Join the Karlsen Discord Server](https://img.shields.io/discord/1169939685280337930.svg?label=&logo=discord&logoColor=ffffff)](https://discord.gg/QyrvshRBJV)
 
 A high-performance GPU miner for **Karlsen (KLS)** using the **KarlsenHashV2** algorithm (FishHashPlus).
-AMD and Intel Arc through OpenCL, NVIDIA through CUDA, in a single binary.
+AMD through OpenCL, NVIDIA through CUDA, in a single binary.
 
 This repository publishes the release binaries and documentation.
 
 ## Features
 
-- **One binary for every GPU** — AMD (OpenCL), Intel Arc (OpenCL) and NVIDIA (CUDA) are detected automatically
+- **One binary for AMD and NVIDIA** — AMD (OpenCL) and NVIDIA (CUDA) are detected automatically
 - **One thread per GPU** — batches are pipelined so a GPU never waits for the host; workload is tuned automatically (~100 ms per batch)
 - **CPU-verified shares** — every share is re-hashed on the CPU before it is sent, so a faulty GPU shows up as HW errors instead of pool rejects
 - **Setup wizard** — first start asks for wallet, pool, GPUs, thermal limits and (optionally) NVIDIA tuning; saved to `karlsenminer_config.json`
@@ -131,7 +131,8 @@ Speed column states: a yellow speed means the card is noticeably slower than the
 | Option | Description |
 |--------|-------------|
 | `-d all` | All GPUs (default) |
-| `-d amd` / `-d nvidia` / `-d intel` | One vendor only |
+| `-d amd` / `-d nvidia` | One vendor only |
+| `-d intel` | Intel Arc only (experimental, untested) |
 | `-d amd:0,1` / `-d nvidia:0` | Specific cards of one vendor (indexes count only that vendor) |
 | `-d 0,1,3` | Indexes as printed at start-up |
 
@@ -176,8 +177,8 @@ Speed column states: a yellow speed means the card is noticeably slower than the
 - RX 7600 / 7700 / 7800 / 7900 (RDNA3)
 - RX 9060 / 9070 (RDNA4)
 
-### Intel (OpenCL)
-- Arc A750 / A770 and newer with 6 GB+ VRAM
+### Intel Arc (experimental)
+Intel Arc cards with 6 GB+ VRAM are detected through OpenCL (`-d intel`), but they have **not been tested**. The kernel may fail its self-test or run slowly. Reports are welcome on [Discord](https://discord.gg/QyrvshRBJV).
 
 ## Algorithm
 
