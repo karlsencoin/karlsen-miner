@@ -1,4 +1,4 @@
-# KarlsenMiner v3.2.0
+# KarlsenMiner v3.3.1
 
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20HiveOS-blue.svg)](https://github.com/karlsencoin/karlsen-miner/releases)
 [![GPU](https://img.shields.io/badge/GPU-AMD%20%2B%20NVIDIA%20%2B%20Intel%20Arc-green.svg)]()
@@ -16,6 +16,7 @@ This repository publishes the release binaries and documentation.
 - **CPU-verified shares** — every share is re-hashed on the CPU before it is sent, so a faulty GPU shows up as HW errors instead of pool rejects
 - **Setup wizard** — first start asks for wallet, pool, GPUs, thermal limits and (optionally) NVIDIA tuning; saved to `karlsenminer_config.json`
 - **NVIDIA tuning** — power limit, core / memory clock lock, core / memory clock offset and fan speed per card, restored when the miner exits
+- **Solo mining on your own node** — `--node grpc://127.0.0.1:42110` mines directly on karlsend: no pool, no stratum bridge, no fee; every block found pays your address
 - **Multi-pool failover** — up to 4 pools with automatic switchover
 - **SSL/TLS** — built-in, certificates verified the same way on Windows and Linux
 - **GPU monitoring** — temperature, junction, power, voltage, clocks, fan, efficiency (MH/s per W)
@@ -29,9 +30,9 @@ Pre-built binaries are on the [Releases](https://github.com/karlsencoin/karlsen-
 
 | File | Platform |
 |------|----------|
-| `karlsenminer-v3.2.0-windows.zip` | Windows 10/11 x64 |
-| `karlsenminer-3.2.0.tar.gz` | HiveOS custom miner |
-| `karlsenminer-v3.2.0-linux.tar.gz` | Linux x64 (glibc 2.25+) |
+| `karlsenminer-v3.3.1-windows.zip` | Windows 10/11 x64 |
+| `karlsenminer-3.3.1.tar.gz` | HiveOS custom miner |
+| `karlsenminer-v3.3.1-linux.tar.gz` | Linux x64 (glibc 2.25+) |
 | `SHA256SUMS.txt` | Checksums of the files above |
 
 Requirements: GPU with 6 GB+ VRAM (the DAG is ~4.6 GB); NVIDIA driver R525 or newer.
@@ -74,14 +75,32 @@ karlsenminer.exe ^
 `--pl 190,150` gives the first NVIDIA card 190 W and the second 150 W; `--cclk 1200` applies to every NVIDIA card.
 
 ### HiveOS
-Flight sheet: Miner = **Custom**, Installation URL = the `karlsenminer-3.2.0.tar.gz` link from the release, Hash algorithm = `karlsenhashv2`, Wallet and worker template = `%WAL%.%WORKER_NAME%`, Pool URL = e.g. `stratum+ssl://pool.woolypooly.com:3132`, Extra config arguments (optional) = e.g. `-d amd --tstop 85`.
+Flight sheet: Miner = **Custom**, Installation URL = the `karlsenminer-3.3.1.tar.gz` link from the release, Hash algorithm = `karlsenhashv2`, Wallet and worker template = `%WAL%.%WORKER_NAME%`, Pool URL = e.g. `stratum+ssl://pool.woolypooly.com:3132`, Extra config arguments (optional) = e.g. `-d amd --tstop 85`.
 
 ### Linux
 ```bash
-tar xzf karlsenminer-v3.2.0-linux.tar.gz
-cd karlsenminer-v3.2.0-linux
+tar xzf karlsenminer-v3.3.1-linux.tar.gz
+cd karlsenminer-v3.3.1-linux
 ./karlsenminer -o stratum+ssl://pool.woolypooly.com:3132 -u YOUR_WALLET.rig1
 ```
+
+## Solo Mining on Your Own Node
+
+KarlsenMiner can mine directly on a Karlsen full node (karlsend), without a pool and without a stratum bridge. The miner asks the node for block templates over gRPC and sends every block it finds straight back to it. The whole block reward goes to your address; there is no pool fee.
+
+```bat
+karlsenminer.exe --node grpc://127.0.0.1:42110 -u karlsen:qz...abc.rig1
+```
+
+The release archives contain `mine_solo.bat` (Windows) and `mine_solo.sh` (Linux) with this command; put your own address in them.
+
+- **You need a synced node.** [Karlsen Desktop](https://github.com/karlsencoin/karlsen-desktop) runs one for you, or run [karlsend](https://github.com/karlsencoin/rusty-karlsen) yourself. Its gRPC server listens on `127.0.0.1:42110` by default. The miner waits until the node is reachable and fully synced before it opens the GPUs, and pauses by itself if the node falls out of sync.
+- **Address and rig name:** `-u ADDRESS.RIG`. The address is checked (including its checksum) before mining starts. The rig name is written into your blocks; explorers show it as `<node version>/KarlsenMiner solo rig RIG`.
+- **No shares.** Only blocks count. The `Blocks` column replaces `A/R`, and the header shows the network difficulty the same way the node and the explorer do.
+- **Expect luck.** On average you find one block every *network hashrate ÷ your hashrate* seconds (Karlsen makes one block per second). A single GPU can go a long time without a block; a pool pays smaller amounts more often.
+- **Where the reward shows up:** in Karlsen's block DAG, a block's coinbase pays the blocks it merges. The reward for your block arrives in the coinbase of a later block, sent to your address.
+- **A node on another machine:** `--node grpc://192.168.1.10:42110` works if that node listens on the network (`--rpclisten=0.0.0.0:42110`). Keep that port inside your own network: do not open it to the internet.
+- **HiveOS:** set the flight sheet's Pool URL to `grpc://NODE_IP:42110`.
 
 ## NVIDIA Tuning
 
@@ -105,7 +124,7 @@ Set it in the wizard (per card, or the same values on every card) or on the comm
 ## Status Display
 
 ```
-   KarlsenMiner v3.2.0 | Pool: pool.woolypooly.com:3132 | Uptime: 8h 36m 1s | Diff: 4.0358
+   KarlsenMiner v3.3.1 | SSL Pool: pool.woolypooly.com:3132 | Uptime: 8h 36m 1s | Diff: 4.0358
   ===========================================================================================================
    GPU  Name              Speed         A/R         HW    Eff.   Power   Volt   CCLK   MCLK   Core   Junc   Fan
      0  RX 6700 XT        29.27 MH/s    51             0   0.353     83W    700   1083   1990    43C    46C   77%
@@ -115,15 +134,18 @@ Set it in the wizard (per card, or the same values on every card) or on the comm
   ===========================================================================================================
 ```
 
+In solo mode the header reads `Solo on node: 127.0.0.1:42110 | ... | Network diff: 6,279,772,969` and the `A/R` column is `Blocks`.
+
 Speed column states: a yellow speed means the card is noticeably slower than the rest; `THERMAL` means it is paused by thermal protection; `FAILED` means it was dropped after an error.
 
 ## All Options
 
-### Pool & Authentication
+### Pool, Node & Authentication
 | Option | Description |
 |--------|-------------|
-| `-o, --pool URL` | Pool address; repeat up to 4 times for failover. Formats: `host:port`, `stratum+tcp://`, `stratum+ssl://` |
-| `-u, --user WALLET[.RIG]` | Wallet address and rig (worker) name |
+| `-o, --pool URL` | Pool address; repeat up to 4 times for failover. Formats: `host:port`, `stratum+tcp://`, `stratum+ssl://`. A `grpc://` address means solo mining on that node |
+| `--node grpc://HOST:PORT` | Solo mining directly on a karlsend node (default port 42110); cannot be combined with a pool |
+| `-u, --user WALLET[.RIG]` | Wallet address and rig (worker) name; with `--node`, the address that receives the block rewards |
 | `-p, --pass PASSWORD` | Pool password (default: `x`) |
 | `--tls on\|off` | Force TLS on every pool |
 
@@ -190,7 +212,8 @@ Pipeline:
 
 ## Related Projects
 
-- [rusty-karlsen](https://github.com/karlsen-network/rusty-karlsen) — Karlsen full node (Rust)
+- [rusty-karlsen](https://github.com/karlsencoin/rusty-karlsen) — Karlsen full node (Rust)
+- [Karlsen Desktop](https://github.com/karlsencoin/karlsen-desktop) — full node and wallet in one app
 - [karlsen-cpu-miner](https://github.com/karlsencoin/karlsen-cpu-miner) — Karlsen CPU miner
 - [KarlsenAI](https://ai.karlsencoin.org/) — decentralised AI inference on Karlsen GPUs
 
